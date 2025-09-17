@@ -1,0 +1,109 @@
+﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
+using WebAPI;
+using WebAPI.Interfaces;
+using WebAPI.Models;
+using WebAPI.Repositories;
+using WebAPI.Services;
+
+var builder = WebApplication.CreateBuilder(args);
+
+//настройка логгера
+builder.Logging.ClearProviders();
+builder.Logging.AddConsole();
+builder.Logging.AddDebug();
+
+Console.OutputEncoding = Encoding.UTF8;
+//путь к файлу логов
+var logPath = "C:\\Users\\Иван\\Desktop\\С#\\WebAPI\\log.txt";
+if(!File.Exists(logPath))
+    File.Create(logPath).Close();
+
+//настройка сервисов
+builder.Services.AddControllers();
+builder.Services.AddEndpointsApiExplorer();
+
+//регистрация репозиториев
+builder.Services.AddSingleton<IRepository<User>, InMemoryRepository<User>>();
+builder.Services.AddSingleton<IRepository<ParkingSpot>, InMemoryRepository<ParkingSpot>>();
+
+//настройка jwt
+var jwtKey = "mysupersecretkeymysupersecretkey";
+var jwtIssuer = "parkingapi";
+
+builder.Services.AddSingleton<ITokenService>(new TokenService(jwtKey, jwtIssuer));
+
+//настройка аутентификации
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
+    {
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidateAudience = true,
+            ValidateLifetime = true,
+            ValidateIssuerSigningKey = true,
+            ValidIssuer = jwtIssuer,
+            ValidAudience = jwtIssuer,
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey))
+        };
+    });
+
+//настройка политик авторизации
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy("AdminOnly", policy => policy.RequireRole("Admin"));
+});
+
+var app = builder.Build();
+
+//middleware для логирования запросов и ответов
+app.Use(async (context, next) =>
+{
+    var request = context.Request;
+    var requestInfo = $"[{DateTime.Now:yyyy-MM-dd HH:mm:ss}] → {request.Method} {request.Path}";
+
+    //логируем в консоль
+    app.Logger.LogInformation(requestInfo);
+
+    //логируем в файл
+    await File.AppendAllTextAsync(logPath, requestInfo + Environment.NewLine);
+
+    await next();
+
+    var response = context.Response;
+    var responseInfo = $"[{DateTime.Now:yyyy-MM-dd HH:mm:ss}] ← {response.StatusCode}";
+
+    app.Logger.LogInformation(responseInfo);
+    await File.AppendAllTextAsync(logPath, responseInfo + Environment.NewLine);
+});
+
+//обработка ошибок
+app.UseExceptionHandler(errorApp =>
+{
+    errorApp.Run(async context =>
+    {
+        context.Response.StatusCode = 500;
+        context.Response.ContentType = "text/plain";
+
+        var error = $"[{DateTime.Now:yyyy-MM-dd HH:mm:ss}] !!! Ошибка: {context.Features.Get<Microsoft.AspNetCore.Diagnostics.IExceptionHandlerFeature>()?.Error.Message}";
+
+        app.Logger.LogError(error);
+        await File.AppendAllTextAsync(logPath, error + Environment.NewLine);
+
+        await context.Response.WriteAsync("Произошла внутренняя ошибка сервера");
+    });
+});
+
+app.UseAuthentication();
+app.UseAuthorization();
+
+//сидирование данных
+var userRepo = app.Services.GetRequiredService<IRepository<User>>();
+var spotRepo = app.Services.GetRequiredService<IRepository<ParkingSpot>>();
+AppSeeder.SeedAll(userRepo, spotRepo);
+
+app.MapControllers();
+
+app.Run();
