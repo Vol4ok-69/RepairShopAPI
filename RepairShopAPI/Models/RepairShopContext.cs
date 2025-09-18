@@ -50,7 +50,7 @@ public partial class RepairShopContext : DbContext
     public virtual DbSet<Service> Services { get; set; }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-        => optionsBuilder.UseNpgsql("Host=localhost;Port=5432;Database=RepairShop;Username=postgres;Password=Rntv1103");
+        => optionsBuilder.UseNpgsql("Name=DefaultConnection");
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

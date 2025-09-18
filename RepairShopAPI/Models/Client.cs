@@ -19,5 +19,7 @@ public partial class Client
 
     public DateTime Createdat { get; set; }
 
+    public string? Password { get; set; }
+
     public virtual ICollection<Device> Devices { get; set; } = new List<Device>();
 }

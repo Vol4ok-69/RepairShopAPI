@@ -40,12 +40,12 @@ namespace RepairShopAPI.Controllers
                     _logger.LogWarning($"Попытка регистрации сотрудника с уже привязанным номером телефона: {employee.Phone}");
                     return BadRequest("Этот номер телефона уже привязан к другому сотруднику");
                 }
-
+                employee.Password = Functions.GetHash(employee.Password);
                 await _db.AddAsync(employee);
 
                 _logger.LogInformation($"Зарегистрирован новый сотрудник: {employee.Firstname}, {employee.Lastname} (ID: {employee.Id})");
 
-                return Ok(new { employee.Firstname,employee.Lastname, employee.Role });
+                return Ok(new { employee.Firstname, employee.Lastname, employee.Role });
             }
             catch (Exception ex)
             {
@@ -53,6 +53,7 @@ namespace RepairShopAPI.Controllers
                 return StatusCode(500, "Внутренняя ошибка сервера");
             }
         }
+
         [HttpPost("registerClient")]
         public async Task<IActionResult> Register([FromBody] Client client)
         {
@@ -73,7 +74,7 @@ namespace RepairShopAPI.Controllers
                     _logger.LogWarning($"Попытка регистрации с уже привязанным номером телефона: {client.Phone}");
                     return BadRequest("Этот номер телефона уже привязан к другому клиенту");
                 }
-
+                client.Password = Functions.GetHash(client.Password);
                 await _db.AddAsync(client);
 
                 _logger.LogInformation($"Зарегистрирован новый клиент: {client.Firstname}, {client.Lastname} (ID: {client.Id})");
@@ -87,22 +88,22 @@ namespace RepairShopAPI.Controllers
             }
         }
 
-        [HttpPost("login")]
-        public IActionResult Login([FromBody] User login)
+        [HttpPost("loginClient")]
+        public IActionResult Login([FromBody] Client login)
         {
             try
             {
-                var user = _userRepo.GetAll().FirstOrDefault(u =>
-                    u.Username == login.Username && u.Password == login.Password);
-
+                var user = _db.Clients.FirstOrDefault(u =>
+                    u.Firstname == login.Firstname && u.Password == Functions.GetHash(login.Password));
+                
                 if (user == null)
                 {
-                    _logger.LogWarning($"Неудачная попытка входа: {login.Username}");
+                    _logger.LogWarning($"Неудачная попытка входа: {login.Firstname}");
                     return Unauthorized("Неверное имя пользователя или пароль");
                 }
-
+                
                 var token = _tokenService.GenerateToken(user);
-                _logger.LogInformation($"Успешный вход пользователя: {user.Username}");
+                _logger.LogInformation($"Успешный вход пользователя: {user.Firstname}");
 
                 return Ok(new { Token = token });
             }

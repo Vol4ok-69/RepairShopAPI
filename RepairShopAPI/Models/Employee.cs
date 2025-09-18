@@ -21,5 +21,7 @@ public partial class Employee
 
     public DateOnly? Hiredat { get; set; }
 
+    public string Password { get; set; } = null!;
+
     public virtual ICollection<Orderassignment> Orderassignments { get; set; } = new List<Orderassignment>();
 }

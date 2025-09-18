@@ -131,4 +131,5 @@ C:\Users\ivank\Desktop\Учёба\C#\RepairShopAPI\RepairShopAPI\bin\Debug\net9.
 C:\Users\ivank\Desktop\Учёба\C#\RepairShopAPI\RepairShopAPI\bin\Debug\net9.0\Swashbuckle.AspNetCore.Swagger.dll
 C:\Users\ivank\Desktop\Учёба\C#\RepairShopAPI\RepairShopAPI\bin\Debug\net9.0\Swashbuckle.AspNetCore.SwaggerGen.dll
 C:\Users\ivank\Desktop\Учёба\C#\RepairShopAPI\RepairShopAPI\bin\Debug\net9.0\Swashbuckle.AspNetCore.SwaggerUI.dll
-C:\Users\ivank\Desktop\Учёба\C#\RepairShopAPI\RepairShopAPI\obj\Debug\net9.0\staticwebassets.upToDateCheck.txt
+C:\Users\ivank\Desktop\Учёба\C#\RepairShopAPI\RepairShopAPI\bin\Debug\net9.0\Microsoft.AspNetCore.JsonPatch.dll
+C:\Users\ivank\Desktop\Учёба\C#\RepairShopAPI\RepairShopAPI\bin\Debug\net9.0\Newtonsoft.Json.dll

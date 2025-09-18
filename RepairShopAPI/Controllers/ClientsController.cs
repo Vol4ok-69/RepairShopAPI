@@ -12,7 +12,7 @@ namespace RepairShopAPI.Controllers
 
         public ClientsController(RepairShopContext db)
         {
-            _db = db;   
+            _db = db;
         }
 
         // получить всех клиентов
@@ -28,7 +28,7 @@ namespace RepairShopAPI.Controllers
         public async Task<IActionResult> Add(Client client)
         {
             await _db.Clients.AddAsync(client);
-            await _db.SaveChangesAsync();        
+            await _db.SaveChangesAsync();
             return Ok(client);
         }
 

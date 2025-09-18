@@ -4,7 +4,7 @@ namespace RepairShopAPI
     public class Logger
     {
         private static readonly Lazy<Logger> _instance =
-            new(() => new Logger());
+            new(() => new());
 
         public static Logger Instance => _instance.Value;
 

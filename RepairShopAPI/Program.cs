@@ -8,17 +8,18 @@ using RepairShopAPI.Models;
 namespace RepairShopAPI
 {
     internal class Program
-    {        
+    {
+        //private readonly RepairShopContext _db = new();
+        private static readonly Logger _logger = Logger.Instance;
         private static void Main(string[] args)
         {
             Console.OutputEncoding = System.Text.Encoding.UTF8;
-            Logger logger = Logger.Instance;
-            //var db = RepairShopContext.GetContext().Database;
+            var s = Functions.GetHash("");
 
             var builder = WebApplication.CreateBuilder(args);
 
-            builder.Services.AddDbContext<RepairShopContext>(opts =>
-                opts.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+            //builder.Services.AddDbContext<RepairShopContext>(opts =>
+            //    opts.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
             // controllers
             builder.Services.AddControllers();
 
