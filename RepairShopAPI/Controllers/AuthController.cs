@@ -1,49 +1,36 @@
-﻿using RepairShopAPI.Models;
+﻿using Microsoft.AspNetCore.Identity.Data;
+using Microsoft.AspNetCore.Mvc;
 using RepairShopAPI;
 using RepairShopAPI.Interfaces;
-using Microsoft.AspNetCore.Mvc;
+using RepairShopAPI.Models;
 
 namespace RepairShopAPI.Controllers
 {   
     [ApiController]
     [Route("api/v1/[controller]")]
-    public class AuthController : ControllerBase
+    public class AuthController(RepairShopContext db, ITokenService tokenService, ILogger<AuthController> logger) : ControllerBase
     {
-        private readonly ITokenService _tokenService;
-        private readonly ILogger<AuthController> _logger;
-        private readonly RepairShopContext _db;
-
-        public AuthController(RepairShopContext db, ITokenService tokenService, ILogger<AuthController> logger)
-        {
-            _db = db;
-            _tokenService = tokenService;
-            _logger = logger;
-        }
-
+        private readonly ITokenService _tokenService = tokenService;
+        private readonly ILogger<AuthController> _logger = logger;
+        private readonly RepairShopContext _db = db;
+        
         [HttpPost("registerEmployee")]
-        public async Task<IActionResult> Register([FromBody] Employee employee)
+        public async Task<IActionResult> RegisterEmployee([FromBody] Employee employee)
         {
             try
             {
-                if (_db.Employees.Any(u => u.Id == employee.Id))
-                {
-                    _logger.LogWarning($"Попытка регистрации существующего сотрудника: {employee.Id}");
-                    return StatusCode(500, "Внутренняя ошибка сервера");
-                }
-                else if (_db.Employees.Any(u => u.Email == employee.Email))
-                {
-                    _logger.LogWarning($"Попытка регистрации сотрудника с уже привязанным email: {employee.Email}");
-                    return BadRequest("Этот email уже привязан к другому сотруднику");
-                }
-                else if (_db.Employees.Any(u => u.Phone == employee.Phone))
-                {
-                    _logger.LogWarning($"Попытка регистрации сотрудника с уже привязанным номером телефона: {employee.Phone}");
-                    return BadRequest("Этот номер телефона уже привязан к другому сотруднику");
-                }
-                employee.Password = Functions.GetHash(employee.Password);
-                await _db.AddAsync(employee);
+                if (_db.Employees.Any(u => u.Email == employee.Email))
+                    return BadRequest("Этот email уже используется");
 
-                _logger.LogInformation($"Зарегистрирован новый сотрудник: {employee.Firstname}, {employee.Lastname} (ID: {employee.Id})");
+                if (!string.IsNullOrEmpty(employee.Phone) && _db.Employees.Any(u => u.Phone == employee.Phone))
+                    return BadRequest("Этот номер телефона уже используется");
+
+                employee.Password = Functions.GetHash(employee.Password);
+
+                await _db.Employees.AddAsync(employee);
+                await _db.SaveChangesAsync();
+
+                _logger.LogInformation($"Зарегистрирован новый сотрудник: {employee.Firstname} {employee.Lastname} (ID: {employee.Id})");
 
                 return Ok(new { employee.Firstname, employee.Lastname, employee.Role });
             }
@@ -55,29 +42,22 @@ namespace RepairShopAPI.Controllers
         }
 
         [HttpPost("registerClient")]
-        public async Task<IActionResult> Register([FromBody] Client client)
+        public async Task<IActionResult> RegisterClient([FromBody] Client client)
         {
             try
             {
-                if (_db.Clients.Any(u => u.Id == client.Id))
-                {
-                    _logger.LogWarning($"Попытка регистрации существующего клиента: {client.Id}");
-                    return StatusCode(500, "Внутренняя ошибка сервера");
-                }
-                else if (_db.Clients.Any(u => u.Email == client.Email))
-                {
-                    _logger.LogWarning($"Попытка регистрации клиента с уже привязанным email: {client.Email}");
-                    return BadRequest("Этот email уже привязан к другому клиенту");
-                }
-                else if (_db.Clients.Any(u => u.Phone == client.Phone))
-                {
-                    _logger.LogWarning($"Попытка регистрации с уже привязанным номером телефона: {client.Phone}");
-                    return BadRequest("Этот номер телефона уже привязан к другому клиенту");
-                }
-                client.Password = Functions.GetHash(client.Password);
-                await _db.AddAsync(client);
+                if (_db.Clients.Any(u => u.Email == client.Email))
+                    return BadRequest("Этот email уже используется");
 
-                _logger.LogInformation($"Зарегистрирован новый клиент: {client.Firstname}, {client.Lastname} (ID: {client.Id})");
+                if (!string.IsNullOrEmpty(client.Phone) && _db.Clients.Any(u => u.Phone == client.Phone))
+                    return BadRequest("Этот номер телефона уже используется");
+
+                client.Password = Functions.GetHash(client.Password);
+
+                await _db.Clients.AddAsync(client);
+                await _db.SaveChangesAsync();
+
+                _logger.LogInformation($"Зарегистрирован новый клиент: {client.Firstname} {client.Lastname} (ID: {client.Id})");
 
                 return Ok(new { client.Firstname, client.Lastname });
             }
@@ -89,27 +69,53 @@ namespace RepairShopAPI.Controllers
         }
 
         [HttpPost("loginClient")]
-        public IActionResult Login([FromBody] Client login)
+        public IActionResult LoginClient([FromBody] LoginRequest login)
         {
             try
             {
-                var user = _db.Clients.FirstOrDefault(u =>
-                    u.Firstname == login.Firstname && u.Password == Functions.GetHash(login.Password));
-                
-                if (user == null)
+                var client = _db.Clients.FirstOrDefault(u =>
+                    u.Email == login.Email && u.Password == Functions.GetHash(login.Password));
+
+                if (client == null)
                 {
-                    _logger.LogWarning($"Неудачная попытка входа: {login.Firstname}");
-                    return Unauthorized("Неверное имя пользователя или пароль");
+                    _logger.LogWarning($"Неудачная попытка входа: {login.Email}");
+                    return Unauthorized("Неверный email или пароль");
                 }
-                
-                var token = _tokenService.GenerateToken(user);
-                _logger.LogInformation($"Успешный вход пользователя: {user.Firstname}");
+
+                var token = _tokenService.GenerateToken(client);
+                _logger.LogInformation($"Успешный вход клиента: {client.Email}");
 
                 return Ok(new { Token = token });
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Ошибка при входе пользователя");
+                _logger.LogError(ex, "Ошибка при входе клиента");
+                return StatusCode(500, "Внутренняя ошибка сервера");
+            }
+        }
+
+        [HttpPost("loginEmployee")]
+        public IActionResult LoginEmployee([FromBody] LoginRequest login)
+        {
+            try
+            {
+                var employee = _db.Employees.FirstOrDefault(u =>
+                    u.Email == login.Email && u.Password == Functions.GetHash(login.Password));
+
+                if (employee == null)
+                {
+                    _logger.LogWarning($"Неудачная попытка входа: {login.Email}");
+                    return Unauthorized("Неверный email или пароль");
+                }
+
+                var token = _tokenService.GenerateToken(employee);
+                _logger.LogInformation($"Успешный вход клиента: {employee.Email}");
+
+                return Ok(new { Token = token });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Ошибка при входе клиента");
                 return StatusCode(500, "Внутренняя ошибка сервера");
             }
         }
@@ -120,6 +126,11 @@ namespace RepairShopAPI.Controllers
             _logger.LogInformation($"Пользователь вышел из системы: {User.Identity?.Name}");
             return Ok("Успешный выход. Токен должен быть удален на клиенте.");
         }
+    }
+    public class LoginRequest
+    {
+        public string Email { get; set; } = null!; 
+        public string Password { get; set; } = null!;
     }
 
 }

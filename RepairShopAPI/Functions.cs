@@ -30,7 +30,7 @@ namespace RepairShopAPI
             foreach (char c in password)
             {
                 hash = ((hash << 5) - hash) + c;
-                hash = hash & hash;
+                hash &= hash;
             }
 
             string a = prefix + hash.ToString("x") + suffix;
@@ -39,7 +39,7 @@ namespace RepairShopAPI
             foreach (char c in a)
             {
                 hash = ((hash << 5) - hash) + c;
-                hash = hash & hash;
+                hash &= hash;
             }
 
             return hash.ToString("x");
