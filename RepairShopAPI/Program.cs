@@ -1,6 +1,9 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.OpenApi.Models; // для OpenApiInfo (опционально)s
 using RepairShopAPI.Models;
+
+//dotnet ef dbcontext scaffold Name=DefaultConnection Npgsql.EntityFrameworkCore.PostgreSQL -o Models -c RepairShopContext --force
 
 namespace RepairShopAPI
 {
@@ -10,7 +13,8 @@ namespace RepairShopAPI
         {
             Console.OutputEncoding = System.Text.Encoding.UTF8;
             Logger logger = Logger.Instance;
-            
+            //var db = RepairShopContext.GetContext().Database;
+
             var builder = WebApplication.CreateBuilder(args);
 
             builder.Services.AddDbContext<RepairShopContext>(opts =>

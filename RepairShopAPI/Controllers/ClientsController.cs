@@ -1,6 +1,5 @@
 ﻿using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using RepairShopAPI.Models;
 
 namespace RepairShopAPI.Controllers
@@ -32,6 +31,7 @@ namespace RepairShopAPI.Controllers
             await _db.SaveChangesAsync();        
             return Ok(client);
         }
+
         // удалить клиента
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(int id)
