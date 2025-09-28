@@ -4,6 +4,578 @@
     "title": "RepairShop API",
     "version": "v1"
   },
-  "paths": { },
-  "components": { }
+  "paths": {
+    "/api/v1/Auth/registerUser": {
+      "post": {
+        "tags": [
+          "Auth"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/User"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/User"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/User"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/v1/Auth/logout": {
+      "post": {
+        "tags": [
+          "Auth"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Customerprofile": {
+        "type": "object",
+        "properties": {
+          "userid": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "address": {
+            "type": "string",
+            "nullable": true
+          },
+          "preferredcontactmethod": {
+            "type": "string",
+            "nullable": true
+          },
+          "notes": {
+            "type": "string",
+            "nullable": true
+          },
+          "user": {
+            "$ref": "#/components/schemas/User"
+          }
+        },
+        "additionalProperties": false
+      },
+      "Invoice": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "orderid": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "issuedat": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "dueat": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "totalamount": {
+            "type": "number",
+            "format": "double"
+          },
+          "paidamount": {
+            "type": "number",
+            "format": "double"
+          },
+          "ispaid": {
+            "type": "boolean"
+          },
+          "metadata": {
+            "type": "string",
+            "nullable": true
+          },
+          "order": {
+            "$ref": "#/components/schemas/Order"
+          },
+          "payments": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Payment"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "Order": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "clientid": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "masterid": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "statusid": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "createdat": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "scheduledat": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "startedat": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "completedat": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "totalprice": {
+            "type": "number",
+            "format": "double",
+            "nullable": true
+          },
+          "externalreference": {
+            "type": "string",
+            "nullable": true
+          },
+          "notes": {
+            "type": "string",
+            "nullable": true
+          },
+          "client": {
+            "$ref": "#/components/schemas/User"
+          },
+          "invoice": {
+            "$ref": "#/components/schemas/Invoice"
+          },
+          "master": {
+            "$ref": "#/components/schemas/User"
+          },
+          "orderevents": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Orderevent"
+            },
+            "nullable": true
+          },
+          "orderparts": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Orderpart"
+            },
+            "nullable": true
+          },
+          "orderservices": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Orderservice"
+            },
+            "nullable": true
+          },
+          "status": {
+            "$ref": "#/components/schemas/Orderstatus"
+          }
+        },
+        "additionalProperties": false
+      },
+      "Orderevent": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "orderid": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "createdat": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "actoruserid": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "eventtype": {
+            "type": "string",
+            "nullable": true
+          },
+          "eventdata": {
+            "type": "string",
+            "nullable": true
+          },
+          "actoruser": {
+            "$ref": "#/components/schemas/User"
+          },
+          "order": {
+            "$ref": "#/components/schemas/Order"
+          }
+        },
+        "additionalProperties": false
+      },
+      "Orderpart": {
+        "type": "object",
+        "properties": {
+          "orderid": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "partid": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "quantity": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "priceattime": {
+            "type": "number",
+            "format": "double"
+          },
+          "order": {
+            "$ref": "#/components/schemas/Order"
+          },
+          "part": {
+            "$ref": "#/components/schemas/Part"
+          }
+        },
+        "additionalProperties": false
+      },
+      "Orderservice": {
+        "type": "object",
+        "properties": {
+          "orderid": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "serviceid": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "quantity": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "priceattime": {
+            "type": "number",
+            "format": "double"
+          },
+          "notes": {
+            "type": "string",
+            "nullable": true
+          },
+          "order": {
+            "$ref": "#/components/schemas/Order"
+          },
+          "service": {
+            "$ref": "#/components/schemas/Service"
+          }
+        },
+        "additionalProperties": false
+      },
+      "Orderstatus": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "code": {
+            "type": "string",
+            "nullable": true
+          },
+          "name": {
+            "type": "string",
+            "nullable": true
+          },
+          "description": {
+            "type": "string",
+            "nullable": true
+          },
+          "orders": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Order"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "Part": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string",
+            "nullable": true
+          },
+          "sku": {
+            "type": "string",
+            "nullable": true
+          },
+          "description": {
+            "type": "string",
+            "nullable": true
+          },
+          "unitprice": {
+            "type": "number",
+            "format": "double"
+          },
+          "stockquantity": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "orderparts": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Orderpart"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "Payment": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "invoiceid": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "paidat": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "amount": {
+            "type": "number",
+            "format": "double"
+          },
+          "method": {
+            "type": "string",
+            "nullable": true
+          },
+          "reference": {
+            "type": "string",
+            "nullable": true
+          },
+          "invoice": {
+            "$ref": "#/components/schemas/Invoice"
+          }
+        },
+        "additionalProperties": false
+      },
+      "Role": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string",
+            "nullable": true
+          },
+          "description": {
+            "type": "string",
+            "nullable": true
+          },
+          "users": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/User"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "Service": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string",
+            "nullable": true
+          },
+          "description": {
+            "type": "string",
+            "nullable": true
+          },
+          "durationminutes": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "price": {
+            "type": "number",
+            "format": "double"
+          },
+          "orderservices": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Orderservice"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "Technicianprofile": {
+        "type": "object",
+        "properties": {
+          "userid": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "employeenumber": {
+            "type": "string",
+            "nullable": true
+          },
+          "hiredate": {
+            "type": "string",
+            "format": "date",
+            "nullable": true
+          },
+          "hourlyrate": {
+            "type": "number",
+            "format": "double",
+            "nullable": true
+          },
+          "certifications": {
+            "type": "string",
+            "nullable": true
+          },
+          "isavailable": {
+            "type": "boolean"
+          },
+          "user": {
+            "$ref": "#/components/schemas/User"
+          }
+        },
+        "additionalProperties": false
+      },
+      "User": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "roleid": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "email": {
+            "type": "string",
+            "nullable": true
+          },
+          "passwordhash": {
+            "type": "string",
+            "nullable": true
+          },
+          "firstname": {
+            "type": "string",
+            "nullable": true
+          },
+          "lastname": {
+            "type": "string",
+            "nullable": true
+          },
+          "phone": {
+            "type": "string",
+            "nullable": true
+          },
+          "createdat": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "isactive": {
+            "type": "boolean"
+          },
+          "patronymic": {
+            "type": "string",
+            "nullable": true
+          },
+          "customerprofile": {
+            "$ref": "#/components/schemas/Customerprofile"
+          },
+          "orderClients": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Order"
+            },
+            "nullable": true
+          },
+          "orderMasters": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Order"
+            },
+            "nullable": true
+          },
+          "orderevents": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Orderevent"
+            },
+            "nullable": true
+          },
+          "role": {
+            "$ref": "#/components/schemas/Role"
+          },
+          "technicianprofile": {
+            "$ref": "#/components/schemas/Technicianprofile"
+          }
+        },
+        "additionalProperties": false
+      }
+    }
+  }
 }

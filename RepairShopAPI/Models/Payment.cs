@@ -5,9 +5,9 @@ namespace RepairShopAPI.Models;
 
 public partial class Payment
 {
-    public int Id { get; set; }
+    public Guid Id { get; set; }
 
-    public int Orderid { get; set; }
+    public Guid? Invoiceid { get; set; }
 
     public DateTime Paidat { get; set; }
 
@@ -15,7 +15,7 @@ public partial class Payment
 
     public string? Method { get; set; }
 
-    public string? Notes { get; set; }
+    public string? Reference { get; set; }
 
-    public virtual Repairorder Order { get; set; } = null!;
+    public virtual Invoice? Invoice { get; set; }
 }

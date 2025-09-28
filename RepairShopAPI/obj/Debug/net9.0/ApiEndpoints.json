@@ -1,1 +1,28 @@
-[]
+[
+  {
+    "ContainingType": "RepairShopAPI.Controllers.AuthController",
+    "Method": "Logout",
+    "RelativePath": "api/v1/Auth/logout",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "RepairShopAPI.Controllers.AuthController",
+    "Method": "RegisterUser",
+    "RelativePath": "api/v1/Auth/registerUser",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "user",
+        "Type": "RepairShopAPI.Models.User",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  }
+]

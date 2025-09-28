@@ -1,11 +1,12 @@
 ﻿using Microsoft.AspNetCore.Identity.Data;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using RepairShopAPI;
 using RepairShopAPI.Interfaces;
 using RepairShopAPI.Models;
 
 namespace RepairShopAPI.Controllers
-{   
+{
     [ApiController]
     [Route("api/v1/[controller]")]
     public class AuthController(RepairShopContext db, ITokenService tokenService, ILogger<AuthController> logger) : ControllerBase
@@ -13,26 +14,43 @@ namespace RepairShopAPI.Controllers
         private readonly ITokenService _tokenService = tokenService;
         private readonly ILogger<AuthController> _logger = logger;
         private readonly RepairShopContext _db = db;
-        
-        [HttpPost("registerEmployee")]
-        public async Task<IActionResult> RegisterEmployee([FromBody] Employee employee)
+
+        [HttpPost("registerUser")]
+        public async Task<IActionResult> RegisterUser([FromBody] User user)
         {
             try
             {
-                if (_db.Employees.Any(u => u.Email == employee.Email))
+                #region Базовые проверки
+                if (!Functions.IsEmail(user.Email) && user.Email != null)
+                    return BadRequest("Необходим корректный email");
+
+                if (!Functions.IsPhoneNumber(user.Phone) && user.Phone != null)
+                    return BadRequest("Необходим корректный телефон");
+
+                if (string.IsNullOrEmpty(user.Passwordhash))
+                    return BadRequest("Необходим пароль");
+
+                if (user.Passwordhash.Length < 7)
+                    return BadRequest("Необходим пароль из не менее чем 8 символов");
+
+                if (user.Passwordhash.Length > 25)
+                    return BadRequest("Слишком длинный пароль, максимум 25 символов");
+
+                if (_db.Users.Any(u => u.Email == user.Email))
                     return BadRequest("Этот email уже используется");
 
-                if (!string.IsNullOrEmpty(employee.Phone) && _db.Employees.Any(u => u.Phone == employee.Phone))
+                if (_db.Users.Any(u => u.Phone == user.Phone))
                     return BadRequest("Этот номер телефона уже используется");
+                #endregion
 
-                employee.Password = Functions.GetHash(employee.Password);
+                user.Passwordhash = Functions.GetHash(user.Passwordhash);
 
-                await _db.Employees.AddAsync(employee);
+                await _db.Users.AddAsync(user);
                 await _db.SaveChangesAsync();
 
-                _logger.LogInformation($"Зарегистрирован новый сотрудник: {employee.Firstname} {employee.Lastname} (ID: {employee.Id})");
+                _logger.LogInformation($"Зарегистрирован новый {(user.Role.Name == "Клиент" ? "клиент" : "сотрудник")}: {user.Firstname} {user.Lastname} (ID: {user.Id})");
 
-                return Ok(new { employee.Firstname, employee.Lastname, employee.Role });
+                return Ok(new { user.Firstname, user.Lastname, user.Role });
             }
             catch (Exception ex)
             {
@@ -41,75 +59,23 @@ namespace RepairShopAPI.Controllers
             }
         }
 
-        [HttpPost("registerClient")]
-        public async Task<IActionResult> RegisterClient([FromBody] Client client)
+        [HttpPost("loginUser")]
+        public async Task<IActionResult> LoginEmployee([FromBody] LoginRequest loginUser)
         {
             try
             {
-                if (_db.Clients.Any(u => u.Email == client.Email))
-                    return BadRequest("Этот email уже используется");
-
-                if (!string.IsNullOrEmpty(client.Phone) && _db.Clients.Any(u => u.Phone == client.Phone))
-                    return BadRequest("Этот номер телефона уже используется");
-
-                client.Password = Functions.GetHash(client.Password);
-
-                await _db.Clients.AddAsync(client);
-                await _db.SaveChangesAsync();
-
-                _logger.LogInformation($"Зарегистрирован новый клиент: {client.Firstname} {client.Lastname} (ID: {client.Id})");
-
-                return Ok(new { client.Firstname, client.Lastname });
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Ошибка при регистрации клиента");
-                return StatusCode(500, "Внутренняя ошибка сервера");
-            }
-        }
-
-        [HttpPost("loginClient")]
-        public IActionResult LoginClient([FromBody] LoginRequest login)
-        {
-            try
-            {
-                var client = _db.Clients.FirstOrDefault(u =>
-                    u.Email == login.Email && u.Password == Functions.GetHash(login.Password));
-
-                if (client == null)
+                User user = await _db.Users.FirstOrDefaultAsync(e =>
+                    e.Email == loginUser.Email &&
+                    loginUser.Password != null &&
+                    e.Passwordhash == Functions.GetHash(loginUser.Password));
+                
+                if (user == null)
                 {
-                    _logger.LogWarning($"Неудачная попытка входа: {login.Email}");
-                    return Unauthorized("Неверный email или пароль");
+                    _logger.LogWarning($"Неудачная попытка входа: {loginUser.Email}");
+                    return Unauthorized("Не удалось найти пользователя с таким email и паролем");
                 }
-
-                var token = _tokenService.GenerateToken(client);
-                _logger.LogInformation($"Успешный вход клиента: {client.Email}");
-
-                return Ok(new { Token = token });
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Ошибка при входе клиента");
-                return StatusCode(500, "Внутренняя ошибка сервера");
-            }
-        }
-
-        [HttpPost("loginEmployee")]
-        public IActionResult LoginEmployee([FromBody] LoginRequest login)
-        {
-            try
-            {
-                var employee = _db.Employees.FirstOrDefault(u =>
-                    u.Email == login.Email && u.Password == Functions.GetHash(login.Password));
-
-                if (employee == null)
-                {
-                    _logger.LogWarning($"Неудачная попытка входа: {login.Email}");
-                    return Unauthorized("Неверный email или пароль");
-                }
-
-                var token = _tokenService.GenerateToken(employee);
-                _logger.LogInformation($"Успешный вход клиента: {employee.Email}");
+                var token = _tokenService.GenerateToken(user);
+                _logger.LogInformation($"Успешный вход клиента: {user.Email}");
 
                 return Ok(new { Token = token });
             }
@@ -129,7 +95,7 @@ namespace RepairShopAPI.Controllers
     }
     public class LoginRequest
     {
-        public string Email { get; set; } = null!; 
+        public string Email { get; set; } = null!;
         public string Password { get; set; } = null!;
     }
 

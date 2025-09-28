@@ -15,19 +15,13 @@ public partial class RepairShopContext : DbContext
     {
     }
 
-    public virtual DbSet<Client> Clients { get; set; }
+    public virtual DbSet<Customerprofile> Customerprofiles { get; set; }
 
-    public virtual DbSet<Device> Devices { get; set; }
+    public virtual DbSet<Invoice> Invoices { get; set; }
 
-    public virtual DbSet<Devicebrand> Devicebrands { get; set; }
+    public virtual DbSet<Order> Orders { get; set; }
 
-    public virtual DbSet<Devicemodel> Devicemodels { get; set; }
-
-    public virtual DbSet<Employee> Employees { get; set; }
-
-    public virtual DbSet<Modelvariant> Modelvariants { get; set; }
-
-    public virtual DbSet<Orderassignment> Orderassignments { get; set; }
+    public virtual DbSet<Orderevent> Orderevents { get; set; }
 
     public virtual DbSet<Orderpart> Orderparts { get; set; }
 
@@ -35,432 +29,346 @@ public partial class RepairShopContext : DbContext
 
     public virtual DbSet<Orderstatus> Orderstatuses { get; set; }
 
-    public virtual DbSet<Ordertotal> Ordertotals { get; set; }
-
     public virtual DbSet<Part> Parts { get; set; }
 
     public virtual DbSet<Payment> Payments { get; set; }
 
-    public virtual DbSet<Processor> Processors { get; set; }
-
-    public virtual DbSet<Region> Regions { get; set; }
-
-    public virtual DbSet<Repairorder> Repairorders { get; set; }
+    public virtual DbSet<Role> Roles { get; set; }
 
     public virtual DbSet<Service> Services { get; set; }
+
+    public virtual DbSet<Technicianprofile> Technicianprofiles { get; set; }
+
+    public virtual DbSet<User> Users { get; set; }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         => optionsBuilder.UseNpgsql("Name=DefaultConnection");
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        modelBuilder.Entity<Client>(entity =>
+        modelBuilder.Entity<Customerprofile>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("clients_pkey");
+            entity.HasKey(e => e.Userid).HasName("customerprofile_pkey");
 
-            entity.ToTable("clients");
+            entity.ToTable("customerprofile");
 
-            entity.HasIndex(e => e.Phone, "idx_clients_phone");
+            entity.Property(e => e.Userid)
+                .ValueGeneratedNever()
+                .HasColumnName("userid");
+            entity.Property(e => e.Address).HasColumnName("address");
+            entity.Property(e => e.Notes).HasColumnName("notes");
+            entity.Property(e => e.Preferredcontactmethod).HasColumnName("preferredcontactmethod");
+
+            entity.HasOne(d => d.User).WithOne(p => p.Customerprofile)
+                .HasForeignKey<Customerprofile>(d => d.Userid)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("customerprofile_userid_fkey");
+        });
+
+        modelBuilder.Entity<Invoice>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("invoice_pkey");
+
+            entity.ToTable("invoice");
+
+            entity.HasIndex(e => e.Orderid, "invoice_orderid_key").IsUnique();
 
             entity.Property(e => e.Id)
-                .UseIdentityAlwaysColumn()
+                .ValueGeneratedNever()
                 .HasColumnName("id");
+            entity.Property(e => e.Dueat).HasColumnName("dueat");
+            entity.Property(e => e.Ispaid)
+                .HasDefaultValue(false)
+                .HasColumnName("ispaid");
+            entity.Property(e => e.Issuedat)
+                .HasDefaultValueSql("now()")
+                .HasColumnName("issuedat");
+            entity.Property(e => e.Metadata)
+                .HasColumnType("jsonb")
+                .HasColumnName("metadata");
+            entity.Property(e => e.Orderid).HasColumnName("orderid");
+            entity.Property(e => e.Paidamount)
+                .HasPrecision(14, 2)
+                .HasColumnName("paidamount");
+            entity.Property(e => e.Totalamount)
+                .HasPrecision(14, 2)
+                .HasColumnName("totalamount");
+
+            entity.HasOne(d => d.Order).WithOne(p => p.Invoice)
+                .HasForeignKey<Invoice>(d => d.Orderid)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("invoice_orderid_fkey");
+        });
+
+        modelBuilder.Entity<Order>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("Order_pkey");
+
+            entity.ToTable("Order");
+
+            entity.Property(e => e.Id)
+                .ValueGeneratedNever()
+                .HasColumnName("id");
+            entity.Property(e => e.Clientid).HasColumnName("clientid");
+            entity.Property(e => e.Completedat).HasColumnName("completedat");
             entity.Property(e => e.Createdat)
                 .HasDefaultValueSql("now()")
                 .HasColumnName("createdat");
-            entity.Property(e => e.Email).HasColumnName("email");
-            entity.Property(e => e.Firstname).HasColumnName("firstname");
-            entity.Property(e => e.Lastname).HasColumnName("lastname");
-            entity.Property(e => e.Patronymic).HasColumnName("patronymic");
-            entity.Property(e => e.Phone).HasColumnName("phone");
-        });
-
-        modelBuilder.Entity<Device>(entity =>
-        {
-            entity.HasKey(e => e.Id).HasName("devices_pkey");
-
-            entity.ToTable("devices");
-
-            entity.HasIndex(e => e.Clientid, "idx_devices_clientid");
-
-            entity.HasIndex(e => e.Modelid, "idx_devices_modelid");
-
-            entity.HasIndex(e => e.Variantid, "idx_devices_variantid");
-
-            entity.Property(e => e.Id)
-                .UseIdentityAlwaysColumn()
-                .HasColumnName("id");
-            entity.Property(e => e.Clientid).HasColumnName("clientid");
-            entity.Property(e => e.Imeiorserial).HasColumnName("imeiorserial");
-            entity.Property(e => e.Modelid).HasColumnName("modelid");
+            entity.Property(e => e.Externalreference).HasColumnName("externalreference");
+            entity.Property(e => e.Masterid).HasColumnName("masterid");
             entity.Property(e => e.Notes).HasColumnName("notes");
-            entity.Property(e => e.Purchasedate).HasColumnName("purchasedate");
-            entity.Property(e => e.Variantid).HasColumnName("variantid");
+            entity.Property(e => e.Scheduledat).HasColumnName("scheduledat");
+            entity.Property(e => e.Startedat).HasColumnName("startedat");
+            entity.Property(e => e.Statusid).HasColumnName("statusid");
+            entity.Property(e => e.Totalprice)
+                .HasPrecision(14, 2)
+                .HasColumnName("totalprice");
 
-            entity.HasOne(d => d.Client).WithMany(p => p.Devices)
+            entity.HasOne(d => d.Client).WithMany(p => p.OrderClients)
                 .HasForeignKey(d => d.Clientid)
-                .HasConstraintName("devices_clientid_fkey");
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("Order_clientid_fkey");
 
-            entity.HasOne(d => d.Model).WithMany(p => p.Devices)
-                .HasForeignKey(d => d.Modelid)
-                .OnDelete(DeleteBehavior.Restrict)
-                .HasConstraintName("devices_modelid_fkey");
+            entity.HasOne(d => d.Master).WithMany(p => p.OrderMasters)
+                .HasForeignKey(d => d.Masterid)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("Order_masterid_fkey");
 
-            entity.HasOne(d => d.Variant).WithMany(p => p.Devices)
-                .HasForeignKey(d => d.Variantid)
-                .OnDelete(DeleteBehavior.SetNull)
-                .HasConstraintName("devices_variantid_fkey");
+            entity.HasOne(d => d.Status).WithMany(p => p.Orders)
+                .HasForeignKey(d => d.Statusid)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("Order_statusid_fkey");
         });
 
-        modelBuilder.Entity<Devicebrand>(entity =>
+        modelBuilder.Entity<Orderevent>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("devicebrands_pkey");
+            entity.HasKey(e => e.Id).HasName("orderevent_pkey");
 
-            entity.ToTable("devicebrands");
-
-            entity.HasIndex(e => e.Brandname, "devicebrands_brandname_key").IsUnique();
+            entity.ToTable("orderevent");
 
             entity.Property(e => e.Id)
-                .UseIdentityAlwaysColumn()
+                .ValueGeneratedNever()
                 .HasColumnName("id");
-            entity.Property(e => e.Brandname).HasColumnName("brandname");
-        });
-
-        modelBuilder.Entity<Devicemodel>(entity =>
-        {
-            entity.HasKey(e => e.Id).HasName("devicemodels_pkey");
-
-            entity.ToTable("devicemodels");
-
-            entity.HasIndex(e => new { e.Brandid, e.Modelname }, "devicemodels_brandid_modelname_key").IsUnique();
-
-            entity.Property(e => e.Id)
-                .UseIdentityAlwaysColumn()
-                .HasColumnName("id");
-            entity.Property(e => e.Brandid).HasColumnName("brandid");
-            entity.Property(e => e.Modelname).HasColumnName("modelname");
-
-            entity.HasOne(d => d.Brand).WithMany(p => p.Devicemodels)
-                .HasForeignKey(d => d.Brandid)
-                .OnDelete(DeleteBehavior.Restrict)
-                .HasConstraintName("devicemodels_brandid_fkey");
-        });
-
-        modelBuilder.Entity<Employee>(entity =>
-        {
-            entity.HasKey(e => e.Id).HasName("employees_pkey");
-
-            entity.ToTable("employees");
-
-            entity.Property(e => e.Id)
-                .UseIdentityAlwaysColumn()
-                .HasColumnName("id");
-            entity.Property(e => e.Email).HasColumnName("email");
-            entity.Property(e => e.Firstname).HasColumnName("firstname");
-            entity.Property(e => e.Hiredat).HasColumnName("hiredat");
-            entity.Property(e => e.Lastname).HasColumnName("lastname");
-            entity.Property(e => e.Patronymic).HasColumnName("patronymic");
-            entity.Property(e => e.Phone).HasColumnName("phone");
-            entity.Property(e => e.Role).HasColumnName("role");
-        });
-
-        modelBuilder.Entity<Modelvariant>(entity =>
-        {
-            entity.HasKey(e => e.Id).HasName("modelvariants_pkey");
-
-            entity.ToTable("modelvariants");
-
-            entity.HasIndex(e => new { e.Modelid, e.Variantname }, "modelvariants_modelid_variantname_key").IsUnique();
-
-            entity.Property(e => e.Id)
-                .UseIdentityAlwaysColumn()
-                .HasColumnName("id");
-            entity.Property(e => e.Modelid).HasColumnName("modelid");
-            entity.Property(e => e.Notes).HasColumnName("notes");
-            entity.Property(e => e.Processorid).HasColumnName("processorid");
-            entity.Property(e => e.Ramgb).HasColumnName("ramgb");
-            entity.Property(e => e.Regioncode).HasColumnName("regioncode");
-            entity.Property(e => e.Storagegb).HasColumnName("storagegb");
-            entity.Property(e => e.Variantname).HasColumnName("variantname");
-
-            entity.HasOne(d => d.Model).WithMany(p => p.Modelvariants)
-                .HasForeignKey(d => d.Modelid)
-                .HasConstraintName("modelvariants_modelid_fkey");
-
-            entity.HasOne(d => d.Processor).WithMany(p => p.Modelvariants)
-                .HasForeignKey(d => d.Processorid)
-                .OnDelete(DeleteBehavior.SetNull)
-                .HasConstraintName("modelvariants_processorid_fkey");
-
-            entity.HasOne(d => d.RegioncodeNavigation).WithMany(p => p.Modelvariants)
-                .HasForeignKey(d => d.Regioncode)
-                .OnDelete(DeleteBehavior.SetNull)
-                .HasConstraintName("modelvariants_regioncode_fkey");
-        });
-
-        modelBuilder.Entity<Orderassignment>(entity =>
-        {
-            entity.HasKey(e => e.Id).HasName("orderassignments_pkey");
-
-            entity.ToTable("orderassignments");
-
-            entity.HasIndex(e => e.Employeeid, "idx_orderassignments_employeeid");
-
-            entity.HasIndex(e => new { e.Orderid, e.Employeeid }, "orderassignments_orderid_employeeid_key").IsUnique();
-
-            entity.Property(e => e.Id)
-                .UseIdentityAlwaysColumn()
-                .HasColumnName("id");
-            entity.Property(e => e.Assignedat)
+            entity.Property(e => e.Actoruserid).HasColumnName("actoruserid");
+            entity.Property(e => e.Createdat)
                 .HasDefaultValueSql("now()")
-                .HasColumnName("assignedat");
-            entity.Property(e => e.Employeeid).HasColumnName("employeeid");
+                .HasColumnName("createdat");
+            entity.Property(e => e.Eventdata)
+                .HasColumnType("jsonb")
+                .HasColumnName("eventdata");
+            entity.Property(e => e.Eventtype).HasColumnName("eventtype");
             entity.Property(e => e.Orderid).HasColumnName("orderid");
-            entity.Property(e => e.Role).HasColumnName("role");
 
-            entity.HasOne(d => d.Employee).WithMany(p => p.Orderassignments)
-                .HasForeignKey(d => d.Employeeid)
-                .OnDelete(DeleteBehavior.Restrict)
-                .HasConstraintName("orderassignments_employeeid_fkey");
+            entity.HasOne(d => d.Actoruser).WithMany(p => p.Orderevents)
+                .HasForeignKey(d => d.Actoruserid)
+                .HasConstraintName("orderevent_actoruserid_fkey");
 
-            entity.HasOne(d => d.Order).WithMany(p => p.Orderassignments)
+            entity.HasOne(d => d.Order).WithMany(p => p.Orderevents)
                 .HasForeignKey(d => d.Orderid)
-                .HasConstraintName("orderassignments_orderid_fkey");
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("orderevent_orderid_fkey");
         });
 
         modelBuilder.Entity<Orderpart>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("orderparts_pkey");
+            entity.HasKey(e => new { e.Orderid, e.Partid }).HasName("orderpart_pkey");
 
-            entity.ToTable("orderparts");
+            entity.ToTable("orderpart");
 
-            entity.HasIndex(e => e.Orderid, "idx_orderparts_orderid");
-
-            entity.HasIndex(e => e.Partid, "idx_orderparts_partid");
-
-            entity.Property(e => e.Id)
-                .UseIdentityAlwaysColumn()
-                .HasColumnName("id");
-            entity.Property(e => e.Notes).HasColumnName("notes");
             entity.Property(e => e.Orderid).HasColumnName("orderid");
             entity.Property(e => e.Partid).HasColumnName("partid");
-            entity.Property(e => e.Quantity)
-                .HasDefaultValue(1)
-                .HasColumnName("quantity");
-            entity.Property(e => e.Unitprice)
-                .HasPrecision(10, 2)
-                .HasColumnName("unitprice");
+            entity.Property(e => e.Priceattime)
+                .HasPrecision(12, 2)
+                .HasColumnName("priceattime");
+            entity.Property(e => e.Quantity).HasColumnName("quantity");
 
             entity.HasOne(d => d.Order).WithMany(p => p.Orderparts)
                 .HasForeignKey(d => d.Orderid)
-                .HasConstraintName("orderparts_orderid_fkey");
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("orderpart_orderid_fkey");
 
             entity.HasOne(d => d.Part).WithMany(p => p.Orderparts)
                 .HasForeignKey(d => d.Partid)
-                .OnDelete(DeleteBehavior.Restrict)
-                .HasConstraintName("orderparts_partid_fkey");
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("orderpart_partid_fkey");
         });
 
         modelBuilder.Entity<Orderservice>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("orderservices_pkey");
+            entity.HasKey(e => new { e.Orderid, e.Serviceid }).HasName("orderservice_pkey");
 
-            entity.ToTable("orderservices");
+            entity.ToTable("orderservice");
 
-            entity.HasIndex(e => e.Orderid, "idx_orderservices_orderid");
-
-            entity.HasIndex(e => e.Serviceid, "idx_orderservices_serviceid");
-
-            entity.Property(e => e.Id)
-                .UseIdentityAlwaysColumn()
-                .HasColumnName("id");
-            entity.Property(e => e.Notes).HasColumnName("notes");
             entity.Property(e => e.Orderid).HasColumnName("orderid");
+            entity.Property(e => e.Serviceid).HasColumnName("serviceid");
+            entity.Property(e => e.Notes).HasColumnName("notes");
+            entity.Property(e => e.Priceattime)
+                .HasPrecision(12, 2)
+                .HasColumnName("priceattime");
             entity.Property(e => e.Quantity)
                 .HasDefaultValue(1)
                 .HasColumnName("quantity");
-            entity.Property(e => e.Serviceid).HasColumnName("serviceid");
-            entity.Property(e => e.Unitprice)
-                .HasPrecision(10, 2)
-                .HasColumnName("unitprice");
 
             entity.HasOne(d => d.Order).WithMany(p => p.Orderservices)
                 .HasForeignKey(d => d.Orderid)
-                .HasConstraintName("orderservices_orderid_fkey");
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("orderservice_orderid_fkey");
 
             entity.HasOne(d => d.Service).WithMany(p => p.Orderservices)
                 .HasForeignKey(d => d.Serviceid)
-                .OnDelete(DeleteBehavior.Restrict)
-                .HasConstraintName("orderservices_serviceid_fkey");
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("orderservice_serviceid_fkey");
         });
 
         modelBuilder.Entity<Orderstatus>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("orderstatuses_pkey");
+            entity.HasKey(e => e.Id).HasName("orderstatus_pkey");
 
-            entity.ToTable("orderstatuses");
+            entity.ToTable("orderstatus");
 
-            entity.HasIndex(e => e.Statuscode, "orderstatuses_statuscode_key").IsUnique();
+            entity.HasIndex(e => e.Code, "orderstatus_code_key").IsUnique();
 
             entity.Property(e => e.Id)
-                .UseIdentityAlwaysColumn()
+                .ValueGeneratedNever()
                 .HasColumnName("id");
-            entity.Property(e => e.Displayname).HasColumnName("displayname");
-            entity.Property(e => e.Statuscode).HasColumnName("statuscode");
-        });
-
-        modelBuilder.Entity<Ordertotal>(entity =>
-        {
-            entity
-                .HasNoKey()
-                .ToView("ordertotals");
-
-            entity.Property(e => e.Createdat).HasColumnName("createdat");
-            entity.Property(e => e.Grandtotal).HasColumnName("grandtotal");
-            entity.Property(e => e.Orderid).HasColumnName("orderid");
-            entity.Property(e => e.Partstotal).HasColumnName("partstotal");
-            entity.Property(e => e.Servicestotal).HasColumnName("servicestotal");
+            entity.Property(e => e.Code).HasColumnName("code");
+            entity.Property(e => e.Description).HasColumnName("description");
+            entity.Property(e => e.Name).HasColumnName("name");
         });
 
         modelBuilder.Entity<Part>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("parts_pkey");
+            entity.HasKey(e => e.Id).HasName("part_pkey");
 
-            entity.ToTable("parts");
+            entity.ToTable("part");
 
-            entity.HasIndex(e => e.Partsku, "parts_partsku_key").IsUnique();
+            entity.HasIndex(e => e.Sku, "part_sku_key").IsUnique();
 
             entity.Property(e => e.Id)
-                .UseIdentityAlwaysColumn()
+                .ValueGeneratedNever()
                 .HasColumnName("id");
-            entity.Property(e => e.Compatiblemodelid).HasColumnName("compatiblemodelid");
-            entity.Property(e => e.Partname).HasColumnName("partname");
-            entity.Property(e => e.Partsku).HasColumnName("partsku");
-            entity.Property(e => e.Stockqty)
+            entity.Property(e => e.Description).HasColumnName("description");
+            entity.Property(e => e.Name).HasColumnName("name");
+            entity.Property(e => e.Sku).HasColumnName("sku");
+            entity.Property(e => e.Stockquantity)
                 .HasDefaultValue(0)
-                .HasColumnName("stockqty");
-            entity.Property(e => e.Unitcost)
-                .HasPrecision(10, 2)
-                .HasColumnName("unitcost");
-
-            entity.HasOne(d => d.Compatiblemodel).WithMany(p => p.Parts)
-                .HasForeignKey(d => d.Compatiblemodelid)
-                .OnDelete(DeleteBehavior.SetNull)
-                .HasConstraintName("parts_compatiblemodelid_fkey");
+                .HasColumnName("stockquantity");
+            entity.Property(e => e.Unitprice)
+                .HasPrecision(12, 2)
+                .HasColumnName("unitprice");
         });
 
         modelBuilder.Entity<Payment>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("payments_pkey");
+            entity.HasKey(e => e.Id).HasName("payment_pkey");
 
-            entity.ToTable("payments");
-
-            entity.HasIndex(e => e.Orderid, "idx_payments_orderid");
+            entity.ToTable("payment");
 
             entity.Property(e => e.Id)
-                .UseIdentityAlwaysColumn()
+                .ValueGeneratedNever()
                 .HasColumnName("id");
             entity.Property(e => e.Amount)
-                .HasPrecision(12, 2)
+                .HasPrecision(14, 2)
                 .HasColumnName("amount");
+            entity.Property(e => e.Invoiceid).HasColumnName("invoiceid");
             entity.Property(e => e.Method).HasColumnName("method");
-            entity.Property(e => e.Notes).HasColumnName("notes");
-            entity.Property(e => e.Orderid).HasColumnName("orderid");
             entity.Property(e => e.Paidat)
                 .HasDefaultValueSql("now()")
                 .HasColumnName("paidat");
+            entity.Property(e => e.Reference).HasColumnName("reference");
 
-            entity.HasOne(d => d.Order).WithMany(p => p.Payments)
-                .HasForeignKey(d => d.Orderid)
-                .HasConstraintName("payments_orderid_fkey");
+            entity.HasOne(d => d.Invoice).WithMany(p => p.Payments)
+                .HasForeignKey(d => d.Invoiceid)
+                .HasConstraintName("payment_invoiceid_fkey");
         });
 
-        modelBuilder.Entity<Processor>(entity =>
+        modelBuilder.Entity<Role>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("processors_pkey");
+            entity.HasKey(e => e.Id).HasName("Role_pkey");
 
-            entity.ToTable("processors");
+            entity.ToTable("Role");
+
+            entity.HasIndex(e => e.Name, "Role_name_key").IsUnique();
 
             entity.Property(e => e.Id)
-                .UseIdentityAlwaysColumn()
+                .ValueGeneratedNever()
                 .HasColumnName("id");
-            entity.Property(e => e.Baseclockghz)
-                .HasPrecision(4, 2)
-                .HasColumnName("baseclockghz");
-            entity.Property(e => e.Cores).HasColumnName("cores");
-            entity.Property(e => e.Name).HasColumnName("name");
-            entity.Property(e => e.Notes).HasColumnName("notes");
-        });
-
-        modelBuilder.Entity<Region>(entity =>
-        {
-            entity.HasKey(e => e.Code).HasName("regions_pkey");
-
-            entity.ToTable("regions");
-
-            entity.Property(e => e.Code).HasColumnName("code");
             entity.Property(e => e.Description).HasColumnName("description");
-        });
-
-        modelBuilder.Entity<Repairorder>(entity =>
-        {
-            entity.HasKey(e => e.Id).HasName("repairorders_pkey");
-
-            entity.ToTable("repairorders");
-
-            entity.HasIndex(e => e.Createdat, "idx_repairorders_createdat");
-
-            entity.HasIndex(e => e.Deviceid, "idx_repairorders_deviceid");
-
-            entity.HasIndex(e => e.Statusid, "idx_repairorders_statusid");
-
-            entity.Property(e => e.Id)
-                .UseIdentityAlwaysColumn()
-                .HasColumnName("id");
-            entity.Property(e => e.Closedat).HasColumnName("closedat");
-            entity.Property(e => e.Createdat)
-                .HasDefaultValueSql("now()")
-                .HasColumnName("createdat");
-            entity.Property(e => e.Customerdescription).HasColumnName("customerdescription");
-            entity.Property(e => e.Deviceid).HasColumnName("deviceid");
-            entity.Property(e => e.Diagnosticnotes).HasColumnName("diagnosticnotes");
-            entity.Property(e => e.Expectedreadyat).HasColumnName("expectedreadyat");
-            entity.Property(e => e.Statusid).HasColumnName("statusid");
-            entity.Property(e => e.Totalcost)
-                .HasPrecision(12, 2)
-                .HasColumnName("totalcost");
-            entity.Property(e => e.Updatedat)
-                .HasDefaultValueSql("now()")
-                .HasColumnName("updatedat");
-
-            entity.HasOne(d => d.Device).WithMany(p => p.Repairorders)
-                .HasForeignKey(d => d.Deviceid)
-                .OnDelete(DeleteBehavior.Restrict)
-                .HasConstraintName("repairorders_deviceid_fkey");
-
-            entity.HasOne(d => d.Status).WithMany(p => p.Repairorders)
-                .HasForeignKey(d => d.Statusid)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("repairorders_statusid_fkey");
+            entity.Property(e => e.Name).HasColumnName("name");
         });
 
         modelBuilder.Entity<Service>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("services_pkey");
+            entity.HasKey(e => e.Id).HasName("service_pkey");
 
-            entity.ToTable("services");
-
-            entity.HasIndex(e => e.Servicecode, "services_servicecode_key").IsUnique();
+            entity.ToTable("service");
 
             entity.Property(e => e.Id)
-                .UseIdentityAlwaysColumn()
+                .ValueGeneratedNever()
                 .HasColumnName("id");
-            entity.Property(e => e.Defaultprice)
-                .HasPrecision(10, 2)
-                .HasColumnName("defaultprice");
-            entity.Property(e => e.Laborminutes).HasColumnName("laborminutes");
-            entity.Property(e => e.Servicecode).HasColumnName("servicecode");
-            entity.Property(e => e.Servicename).HasColumnName("servicename");
+            entity.Property(e => e.Description).HasColumnName("description");
+            entity.Property(e => e.Durationminutes).HasColumnName("durationminutes");
+            entity.Property(e => e.Name).HasColumnName("name");
+            entity.Property(e => e.Price)
+                .HasPrecision(12, 2)
+                .HasColumnName("price");
+        });
+
+        modelBuilder.Entity<Technicianprofile>(entity =>
+        {
+            entity.HasKey(e => e.Userid).HasName("technicianprofile_pkey");
+
+            entity.ToTable("technicianprofile");
+
+            entity.HasIndex(e => e.Employeenumber, "technicianprofile_employeenumber_key").IsUnique();
+
+            entity.Property(e => e.Userid)
+                .ValueGeneratedNever()
+                .HasColumnName("userid");
+            entity.Property(e => e.Certifications).HasColumnName("certifications");
+            entity.Property(e => e.Employeenumber).HasColumnName("employeenumber");
+            entity.Property(e => e.Hiredate).HasColumnName("hiredate");
+            entity.Property(e => e.Hourlyrate)
+                .HasPrecision(12, 2)
+                .HasColumnName("hourlyrate");
+            entity.Property(e => e.Isavailable)
+                .HasDefaultValue(true)
+                .HasColumnName("isavailable");
+
+            entity.HasOne(d => d.User).WithOne(p => p.Technicianprofile)
+                .HasForeignKey<Technicianprofile>(d => d.Userid)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("technicianprofile_userid_fkey");
+        });
+
+        modelBuilder.Entity<User>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("User_pkey");
+
+            entity.ToTable("User");
+
+            entity.HasIndex(e => e.Email, "User_email_key").IsUnique();
+
+            entity.Property(e => e.Id)
+                .ValueGeneratedNever()
+                .HasColumnName("id");
+            entity.Property(e => e.Createdat)
+                .HasDefaultValueSql("now()")
+                .HasColumnName("createdat");
+            entity.Property(e => e.Email).HasColumnName("email");
+            entity.Property(e => e.Firstname).HasColumnName("firstname");
+            entity.Property(e => e.Isactive)
+                .HasDefaultValue(true)
+                .HasColumnName("isactive");
+            entity.Property(e => e.Lastname).HasColumnName("lastname");
+            entity.Property(e => e.Passwordhash).HasColumnName("passwordhash");
+            entity.Property(e => e.Phone).HasColumnName("phone");
+            entity.Property(e => e.Roleid).HasColumnName("roleid");
+
+            entity.HasOne(d => d.Role).WithMany(p => p.Users)
+                .HasForeignKey(d => d.Roleid)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("User_roleid_fkey");
         });
 
         OnModelCreatingPartial(modelBuilder);

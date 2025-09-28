@@ -3,7 +3,6 @@ namespace RepairShopAPI.Interfaces
 {
     public interface ITokenService
     {
-        string GenerateToken(Client client);
-        string GenerateToken(Employee employee);
+        string GenerateToken(User user);
     }
 }

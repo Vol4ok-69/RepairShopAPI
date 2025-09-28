@@ -1,5 +1,8 @@
-﻿using RepairShopAPI.Models;
-using static System.Runtime.InteropServices.JavaScript.JSType;
+﻿using Newtonsoft.Json;
+using RepairShopAPI.Models;
+using System;
+using System.Text.Json;
+using System.Text.RegularExpressions;
 
 namespace RepairShopAPI
 {
@@ -11,21 +14,15 @@ namespace RepairShopAPI
             new(() => new());
 
         public static Functions Instance => _instance.Value;
-        Functions()
-        {
-            
-        }
 
         public static string GetHash(string? password)
         {
             if (string.IsNullOrEmpty(password))
-            {
                 return string.Empty;
-            }
-
-            const string prefix = "TiMoHa69_";
-            const string suffix = "_IdIot_69";
-
+            var config = JsonConvert.DeserializeObject<Config>(File.ReadAllText("secret.json"));
+            string prefix = config.Prefix;
+            string suffix = config.Suffix;
+            Console.WriteLine(prefix);
             int hash = 0;
             foreach (char c in password)
             {
@@ -44,5 +41,23 @@ namespace RepairShopAPI
 
             return hash.ToString("x");
         }
+
+        public static bool IsEmail(string input = null!)
+        {
+            string pattern = @"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$";
+            return Regex.IsMatch(input, pattern);
+        }
+
+        public static bool IsPhoneNumber(string input = null!)
+        {
+            string pattern = @"^\+?[1-9]\d{1,14}$";
+            string digitsOnly = Regex.Replace(input, @"[\s\-\(\)]", "");
+            return Regex.IsMatch(digitsOnly, pattern);
+        }
+    }
+    public class Config
+    {
+        public string Prefix { get; set; } = null!;
+        public string Suffix { get; set; } = null!;
     }
 }
