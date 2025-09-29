@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using RepairShopAPI.HelperControllerClasses;
 using RepairShopAPI.Interfaces;
 using RepairShopAPI.Models;
 
@@ -66,7 +67,7 @@ namespace RepairShopAPI.Controllers
                     e.Email == loginUser.Email &&
                     loginUser.Password != null &&
                     e.Passwordhash == Functions.GetHash(loginUser.Password));
-                
+
                 if (user == null)
                 {
                     _logger.LogWarning($"Неудачная попытка входа: {loginUser.Email}");
@@ -90,11 +91,5 @@ namespace RepairShopAPI.Controllers
             _logger.LogInformation($"Пользователь вышел из системы: {User.Identity?.Name}");
             return Ok("Успешный выход. Токен должен быть удален на клиенте.");
         }
-    }
-
-    public class LoginRequest
-    {
-        public string Email { get; set; } = null!;
-        public string Password { get; set; } = null!;
     }
 }

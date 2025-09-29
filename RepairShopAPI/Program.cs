@@ -15,7 +15,6 @@ namespace RepairShopAPI
         {
             Console.OutputEncoding = System.Text.Encoding.UTF8;
             File.AppendAllText(logPath, $"Logger started at [{DateTime.Now:dd.MM.yyyy HH:mm:ss}]");
-            string s = Functions.GetHash("!!!!");
             var builder = WebApplication.CreateBuilder(args);
             builder.Logging.ClearProviders();
             builder.Logging.AddConsole();
@@ -24,7 +23,7 @@ namespace RepairShopAPI
             //builder.Services.AddDbContext<RepairShopContext>(opts =>
             //    opts.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
             // controllers
-            builder.Services.AddControllers();
+            builder.Services.AddControllers().AddNewtonsoftJson();
             
             // --- SWAGGER ---
             builder.Services.AddEndpointsApiExplorer();

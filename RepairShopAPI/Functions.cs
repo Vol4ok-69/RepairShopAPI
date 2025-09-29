@@ -19,7 +19,7 @@ namespace RepairShopAPI
         {
             if (string.IsNullOrEmpty(password))
                 return string.Empty;
-            var config = JsonConvert.DeserializeObject<Config>(File.ReadAllText("secret.json"));
+            var config = JsonConvert.DeserializeObject<HashConfig>(File.ReadAllText("secret.json"));
             string prefix = config.Prefix;
             string suffix = config.Suffix;
             Console.WriteLine(prefix);
@@ -55,7 +55,7 @@ namespace RepairShopAPI
             return Regex.IsMatch(digitsOnly, pattern);
         }
     }
-    public class Config
+    public class HashConfig
     {
         public string Prefix { get; set; } = null!;
         public string Suffix { get; set; } = null!;
