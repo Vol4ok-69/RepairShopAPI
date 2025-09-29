@@ -1,5 +1,4 @@
 .vs/
-C:\Users\ivank\Desktop\Учёба\C#\RepairShopAPI\RepairShopAPI\appsettings.json
 Log.txt
 RepairShopAPI/GlobalSuppressions.cs
 RepairShopAPI/secret.json
@@ -7,3 +6,7 @@ RepairShopAPI/secret.json
 RepairShopAPI/obj/
 RepairShopAPI/bin/
 CodeFile.cs
+
+# Application settings (should not be committed)
+appsettings.json
+appsettings.*.json
