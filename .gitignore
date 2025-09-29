@@ -2,3 +2,8 @@
 C:\Users\ivank\Desktop\Учёба\C#\RepairShopAPI\RepairShopAPI\appsettings.json
 Log.txt
 RepairShopAPI/GlobalSuppressions.cs
+RepairShopAPI/secret.json
+.editorconfig
+RepairShopAPI/obj/
+RepairShopAPI/bin/
+CodeFile.cs

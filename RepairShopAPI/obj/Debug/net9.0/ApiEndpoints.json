@@ -1,6 +1,22 @@
 [
   {
     "ContainingType": "RepairShopAPI.Controllers.AuthController",
+    "Method": "LoginEmployee",
+    "RelativePath": "api/v1/Auth/loginUser",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "loginUser",
+        "Type": "RepairShopAPI.Controllers.LoginRequest",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "RepairShopAPI.Controllers.AuthController",
     "Method": "Logout",
     "RelativePath": "api/v1/Auth/logout",
     "HttpMethod": "POST",

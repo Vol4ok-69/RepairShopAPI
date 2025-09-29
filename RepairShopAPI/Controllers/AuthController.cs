@@ -1,7 +1,5 @@
-﻿using Microsoft.AspNetCore.Identity.Data;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using RepairShopAPI;
 using RepairShopAPI.Interfaces;
 using RepairShopAPI.Models;
 
@@ -93,10 +91,10 @@ namespace RepairShopAPI.Controllers
             return Ok("Успешный выход. Токен должен быть удален на клиенте.");
         }
     }
+
     public class LoginRequest
     {
         public string Email { get; set; } = null!;
         public string Password { get; set; } = null!;
     }
-
 }
