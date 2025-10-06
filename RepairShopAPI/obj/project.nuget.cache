@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "dgSpecHash": "5HPb0C1wM4w=",
+  "dgSpecHash": "Z4yZ/RkhFU0=",
   "success": true,
   "projectFilePath": "C:\\Users\\ivank\\Desktop\\Учёба\\C#\\RepairShopAPI\\RepairShopAPI\\RepairShopAPI.csproj",
   "expectedPackageFiles": [
@@ -62,7 +62,11 @@
     "C:\\Users\\ivank\\.nuget\\packages\\system.reflection.metadata\\7.0.0\\system.reflection.metadata.7.0.0.nupkg.sha512",
     "C:\\Users\\ivank\\.nuget\\packages\\system.runtime.compilerservices.unsafe\\6.0.0\\system.runtime.compilerservices.unsafe.6.0.0.nupkg.sha512",
     "C:\\Users\\ivank\\.nuget\\packages\\system.text.json\\9.0.9\\system.text.json.9.0.9.nupkg.sha512",
-    "C:\\Users\\ivank\\.nuget\\packages\\system.threading.channels\\7.0.0\\system.threading.channels.7.0.0.nupkg.sha512"
+    "C:\\Users\\ivank\\.nuget\\packages\\system.threading.channels\\7.0.0\\system.threading.channels.7.0.0.nupkg.sha512",
+    "C:\\Users\\ivank\\.nuget\\packages\\microsoft.windowsdesktop.app.ref\\9.0.9\\microsoft.windowsdesktop.app.ref.9.0.9.nupkg.sha512",
+    "C:\\Users\\ivank\\.nuget\\packages\\microsoft.netcore.app.ref\\9.0.9\\microsoft.netcore.app.ref.9.0.9.nupkg.sha512",
+    "C:\\Users\\ivank\\.nuget\\packages\\microsoft.aspnetcore.app.ref\\9.0.9\\microsoft.aspnetcore.app.ref.9.0.9.nupkg.sha512",
+    "C:\\Users\\ivank\\.nuget\\packages\\microsoft.netcore.app.host.win-x64\\9.0.9\\microsoft.netcore.app.host.win-x64.9.0.9.nupkg.sha512"
   ],
   "logs": []
 }

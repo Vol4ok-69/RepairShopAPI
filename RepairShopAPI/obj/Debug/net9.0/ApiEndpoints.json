@@ -9,7 +9,7 @@
     "Parameters": [
       {
         "Name": "loginUser",
-        "Type": "RepairShopAPI.Controllers.LoginRequest",
+        "Type": "RepairShopAPI.HelperControllerClasses.LoginRequest",
         "IsRequired": true
       }
     ],
@@ -36,6 +36,90 @@
       {
         "Name": "user",
         "Type": "RepairShopAPI.Models.User",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "RepairShopAPI.Controllers.UserController",
+    "Method": "GetAllUsers",
+    "RelativePath": "api/v1/User",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "RepairShopAPI.Controllers.UserController",
+    "Method": "GetUser",
+    "RelativePath": "api/v1/User/{id}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Guid",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "RepairShopAPI.Controllers.UserController",
+    "Method": "DeleteUser",
+    "RelativePath": "api/v1/User/{id}",
+    "HttpMethod": "DELETE",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Guid",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "RepairShopAPI.Controllers.UserController",
+    "Method": "UpdateUser",
+    "RelativePath": "api/v1/User/{id}",
+    "HttpMethod": "PUT",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Guid",
+        "IsRequired": true
+      },
+      {
+        "Name": "userDto",
+        "Type": "RepairShopAPI.HelperControllerClasses.UserUpdateDto",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "RepairShopAPI.Controllers.UserController",
+    "Method": "PatchUser",
+    "RelativePath": "api/v1/User/{id}",
+    "HttpMethod": "PATCH",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Guid",
+        "IsRequired": true
+      },
+      {
+        "Name": "patchDoc",
+        "Type": "Microsoft.AspNetCore.JsonPatch.Operations.Operation[]",
         "IsRequired": true
       }
     ],

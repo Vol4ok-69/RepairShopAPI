@@ -37,7 +37,7 @@ namespace RepairShopAPI.Controllers
         {
             try
             {
-                User user = await _db.Users.FindAsync(id);
+                User? user = await _db.Users.FindAsync(id);
                 if (user == null)
                 {
                     _logger.LogWarning($"Попытка получения несуществующего пользователя с id: {id}");
@@ -53,12 +53,12 @@ namespace RepairShopAPI.Controllers
             }
         }
 
-        [HttpDelete("{id}")]
+        [HttpDelete("{id:guid}")]
         public async Task<IActionResult> DeleteUser(Guid id)
         {
             try
             {
-                User user = await _db.Users.FindAsync(id);
+                User? user = await _db.Users.FindAsync(id);
                 if (user == null)
                 {
                     _logger.LogWarning($"Попытка удаления несуществующего пользователя с id: {id}");
@@ -80,7 +80,7 @@ namespace RepairShopAPI.Controllers
         {
             try
             {
-                User user = await _db.Users.FindAsync(id);
+                User? user = await _db.Users.FindAsync(id);
                 if (user == null)
                 {
                     _logger.LogWarning($"Попытка изменения несуществующего пользователя с id: {id}");
@@ -136,7 +136,7 @@ namespace RepairShopAPI.Controllers
                     return BadRequest("Patch документ не может быть null");
                 }
 
-                User user = await _db.Users.FindAsync(id);
+                User? user = await _db.Users.FindAsync(id);
                 if (user == null)
                 {
                     _logger.LogWarning($"Попытка изменения несуществующего пользователя с id: {id}");
